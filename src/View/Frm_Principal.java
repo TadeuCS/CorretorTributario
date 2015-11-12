@@ -485,7 +485,8 @@ public class Frm_Principal extends javax.swing.JFrame {
                     + "d.PIS_CST,d.COFINS_CST,d.ALIQPIS,d.ALIQCOFINS,d.PISent_CST,d.COFINSent_CST,d.ALIQPISent,d.ALIQCOFINSent\n"
                     + "from produto p\n"
                     + "inner join produtodetalhe d on p.CODPROD=d.CODPROD\n"
-                    + "inner join clasfisc c on p.CODCLASFIS=c.CODCLASFIS");
+                    + "inner join clasfisc c on p.CODCLASFIS=c.CODCLASFIS "
+                    + "where p.ativo='S' order by p.descricao");
             while (rs.next()) {
                 produto = new Produto();
                 produto.setCodprod(rs.getString("codprod"));
@@ -523,8 +524,6 @@ public class Frm_Principal extends javax.swing.JFrame {
     }
 
     private void start() {
-        txt_servidor.setText("tadeu-pc");
-        txt_caminhoBanco.setText("C:\\ResWinCS\\Banco\\RESULTH.FB");
         txt_usuario.setText("SYSDBA");
         txt_senha.setText("masterkey");
     }
