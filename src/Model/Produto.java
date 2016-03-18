@@ -28,6 +28,15 @@ public class Produto {
     private String cofinsent_cst;
     private String aliqpisent;
     private String aliqcofinsent;
+    private String codcest;
+
+    public String getCodcest() {
+        return codcest;
+    }
+
+    public void setCodcest(String codcest) {
+        this.codcest = codcest;
+    }
 
     public String getCodprod() {
         return codprod;

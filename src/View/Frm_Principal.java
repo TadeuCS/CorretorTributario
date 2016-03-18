@@ -10,11 +10,12 @@ import Util.Conexao;
 import Util.ExcelControl;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
 
 public class Frm_Principal extends javax.swing.JFrame {
 
@@ -412,6 +413,8 @@ public class Frm_Principal extends javax.swing.JFrame {
             acao = new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    long time1 = System.currentTimeMillis();
+
                     try {
                         if (rbt_codigo.isSelected()) {
                             for (int i = 0; i < produtos.size(); i++) {
@@ -421,7 +424,8 @@ public class Frm_Principal extends javax.swing.JFrame {
                                         + "p.codtribut00='" + trataCamposByQtde(3, produto.getCodtribut00()) + "',"
                                         + "p.baseicmsreg00='" + produto.getBaseicmsreg00() + "',"
                                         + "p.aliqicmsreg00=" + Double.parseDouble(produto.getAliqicmsreg00().replace(",", ".")) + ","
-                                        + "p.aliqicmspdv=" + Double.parseDouble(produto.getAliqicmspdv().replace(",", "."))
+                                        + "p.aliqicmspdv=" + Double.parseDouble(produto.getAliqicmspdv().replace(",", ".")) + ","
+                                        + "p.codcest='" + produto.getCodcest().replace(".", "") + "'"
                                         + " where p.codprod='" + produto.getCodprod() + "';");
                                 st.executeUpdate("UPDATE PRODUTODETALHE d SET "
                                         + "d.pis_cst='" + trataCamposByQtde(2, produto.getPis_cst()) + "',"
@@ -446,7 +450,8 @@ public class Frm_Principal extends javax.swing.JFrame {
                                             + "p.codtribut00='" + trataCamposByQtde(3, produto.getCodtribut00()) + "',"
                                             + "p.baseicmsreg00='" + produto.getBaseicmsreg00() + "',"
                                             + "p.aliqicmsreg00=" + Double.parseDouble(produto.getAliqicmsreg00().replace(",", ".")) + ","
-                                            + "p.aliqicmspdv=" + Double.parseDouble(produto.getAliqicmspdv().replace(",", "."))
+                                            + "p.aliqicmspdv=" + Double.parseDouble(produto.getAliqicmspdv().replace(",", ".")) + ","
+                                            + "p.codcest='" + produto.getCodcest().replace(".", "") + "'"
                                             + " where p.referencia='" + produto.getReferencia() + "';");
                                     st.executeUpdate("UPDATE PRODUTODETALHE d SET "
                                             + "d.pis_cst='" + trataCamposByQtde(2, produto.getPis_cst()) + "',"
@@ -469,8 +474,12 @@ public class Frm_Principal extends javax.swing.JFrame {
                         qtde.setText("0");
                     } catch (Exception e) {
                         JOptionPane.showMessageDialog(null, "Erro ao importar os dados do produto: " + produto.getCodprod() + "\n" + e);
+                    } finally {
+                        long time2 = System.currentTimeMillis();
+                        JOptionPane.showMessageDialog(null, "A importação demorou: "+new SimpleDateFormat("mm:ss").format(new Date(time2 - time1)));
                     }
                 }
+
             }
             );
             acao.start();
@@ -481,7 +490,7 @@ public class Frm_Principal extends javax.swing.JFrame {
         try {
             produtos = new ArrayList<>();
             rs = st.executeQuery("select\n"
-                    + "p.CODPROD,p.REFERENCIA,p.DESCRICAO,c.CODIGONCM,c.CODNATRECEITA,p.CODTRIBUT00,p.BASEICMSREG00,p.ALIQICMSREG00,p.ALIQICMSPDV,\n"
+                    + "p.CODPROD,p.REFERENCIA,p.DESCRICAO,p.CODCEST,c.CODIGONCM,c.CODNATRECEITA,p.CODTRIBUT00,p.BASEICMSREG00,p.ALIQICMSREG00,p.ALIQICMSPDV,\n"
                     + "d.PIS_CST,d.COFINS_CST,d.ALIQPIS,d.ALIQCOFINS,d.PISent_CST,d.COFINSent_CST,d.ALIQPISent,d.ALIQCOFINSent\n"
                     + "from produto p\n"
                     + "inner join produtodetalhe d on p.CODPROD=d.CODPROD\n"
@@ -506,6 +515,7 @@ public class Frm_Principal extends javax.swing.JFrame {
                 produto.setCofinsent_cst(rs.getString("cofinsent_cst"));
                 produto.setAliqpisent(rs.getString("aliqpisent"));
                 produto.setAliqcofinsent(rs.getString("aliqcofinsent"));
+                produto.setCodcest(rs.getString("CODCEST"));
                 produtos.add(produto);
             }
             xls = new ExcelControl();
@@ -524,7 +534,9 @@ public class Frm_Principal extends javax.swing.JFrame {
     }
 
     private void start() {
+        txt_servidor.setText("localhost");
         txt_usuario.setText("SYSDBA");
         txt_senha.setText("masterkey");
+        rbt_codigo.setSelected(true);
     }
 }

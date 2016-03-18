@@ -71,6 +71,7 @@ public class ExcelControl {
                 Cell colunaO = sheet.getCell(14, i);
                 Cell colunaP = sheet.getCell(15, i);
                 Cell colunaQ = sheet.getCell(16, i);
+                Cell colunaR = sheet.getCell(17, i);
                 produto.setCodprod(colunaA.getContents());
                 produto.setReferencia(colunaB.getContents());
                 produto.setDescricao(colunaC.getContents());
@@ -88,6 +89,7 @@ public class ExcelControl {
                 produto.setCofinsent_cst(colunaO.getContents());
                 produto.setAliqpisent(colunaP.getContents());
                 produto.setAliqcofinsent(colunaQ.getContents());
+                produto.setCodcest(colunaR.getContents());
                 produtos.add(produto);
             }
         } catch (Exception e) {
