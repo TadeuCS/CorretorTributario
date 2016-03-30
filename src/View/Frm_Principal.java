@@ -403,6 +403,46 @@ public class Frm_Principal extends javax.swing.JFrame {
         return retorno;
     }
 
+    private String getCodClasfis(String codigoNcm) {
+        String codclasfis = null;
+        if (codigoNcm.length() == 8) {
+            try {
+                rs = st.executeQuery("SELECT * FROM CLASFISC WHERE CODIGONCM='" + codigoNcm + "'");
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Erro ao buscar NCM: " + codigoNcm);
+            }
+            try {
+                if (rs.next()) {
+                    codclasfis = rs.getString("CODCLASFIS");
+                } else {
+                    System.out.println(codigoNcm);
+                    codclasfis = insereNCM(codigoNcm);
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e.getMessage());
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "NCM deve conter 8 caracteres!");
+        }
+        return codclasfis;
+    }
+
+    private String insereNCM(String codigoNcm) {
+        String codclasfis = null;
+        try {
+            rs = st.executeQuery("select max(codclasfis) as qtde from clasfisc");
+            if (rs.next()) {
+                int qtde = Integer.parseInt(rs.getString("qtde").toString()) + 1;
+                codclasfis = qtde + "";
+                st.executeUpdate("INSERT INTO CLASFISC (CODCLASFIS, CODNBM, PISCONFRETIDO,CODIGONCM) VALUES "
+                        + "('" + codclasfis + "', '" + codigoNcm + "', 1,'" + codigoNcm + "');");
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage());
+        }
+        return codclasfis;
+    }
+
     private void importa(String caminhoPlanilha, Statement st) {
         if (caminhoPlanilha != null && st != null) {
             xls = new ExcelControl();
@@ -414,13 +454,15 @@ public class Frm_Principal extends javax.swing.JFrame {
                 @Override
                 public void run() {
                     long time1 = System.currentTimeMillis();
-
                     try {
                         if (rbt_codigo.isSelected()) {
                             for (int i = 0; i < produtos.size(); i++) {
                                 produto = produtos.get(i);
+                                st.executeUpdate("UPDATE PRODUTO p SET p.codclasfis ='"
+                                        + trataCamposByQtde(4, getCodClasfis(produto.getCodigoncm()))
+                                        + "' where p.codprod='" + produto.getCodprod() + "';");
+
                                 st.executeUpdate("UPDATE PRODUTO p SET "
-                                        + "p.CODCLASFIS=(SELECT FIRST 1 SKIP 0 C.CODCLASFIS FROM CLASFISC C WHERE C.CODIGONCM LIKE '" + produto.getCodigoncm() + "'),"
                                         + "p.codtribut00='" + trataCamposByQtde(3, produto.getCodtribut00()) + "',"
                                         + "p.baseicmsreg00='" + produto.getBaseicmsreg00() + "',"
                                         + "p.aliqicmsreg00=" + Double.parseDouble(produto.getAliqicmsreg00().replace(",", ".")) + ","
@@ -445,6 +487,10 @@ public class Frm_Principal extends javax.swing.JFrame {
                             for (int i = 0; i < produtos.size(); i++) {
                                 produto = produtos.get(i);
                                 if (!produto.getReferencia().trim().isEmpty()) {
+                                    st.executeUpdate("UPDATE PRODUTO p SET p.codclasfis ='"
+                                            + trataCamposByQtde(4, getCodClasfis(produto.getCodigoncm()))
+                                            + " where p.referencia='" + produto.getReferencia() + "';");
+                                    
                                     st.executeUpdate("UPDATE PRODUTO p SET "
                                             + "p.CODCLASFIS=(SELECT FIRST 1 SKIP 0 C.CODCLASFIS FROM CLASFISC C WHERE C.CODIGONCM LIKE '" + produto.getCodigoncm() + "'),"
                                             + "p.codtribut00='" + trataCamposByQtde(3, produto.getCodtribut00()) + "',"
@@ -476,7 +522,7 @@ public class Frm_Principal extends javax.swing.JFrame {
                         JOptionPane.showMessageDialog(null, "Erro ao importar os dados do produto: " + produto.getCodprod() + "\n" + e);
                     } finally {
                         long time2 = System.currentTimeMillis();
-                        JOptionPane.showMessageDialog(null, "A importação demorou: "+new SimpleDateFormat("mm:ss").format(new Date(time2 - time1)));
+                        JOptionPane.showMessageDialog(null, "A importação demorou: " + new SimpleDateFormat("mm:ss").format(new Date(time2 - time1)));
                     }
                 }
 
